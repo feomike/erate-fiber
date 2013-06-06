@@ -20,6 +20,14 @@
 ##a shapefile of the the buffers of the towers excluding lpfm
 ##creates 1 output shapefile per channel
 ##uses epsg 102010 - http://spatialreference.org/ref/esri/102010/
+##the output table "theTble' variable below, needs to have the following fields to 
+##accept values
+##gid_closest (becomes the ID of the next closest feature in theTble
+##address - the linear distance to fiber from the address feature in meters
+##block - the linear distance to fiber from the block feature in meters
+##road - the linear distance to fiber from the road feature in meters
+##cai - the linear distance to fiber from the cai features feature in meters
+##middle mile - the linear distance to fiber from the middle mile feature in meters
 
 # Import system modules
 import sys, string, os
