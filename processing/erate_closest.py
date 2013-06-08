@@ -107,7 +107,7 @@ try:
 	conn = psycopg2.connect(myConn)
 	theCur = conn.cursor()
 	#get the total number of records to go through
-	theSQL = "SELECT count(*) from " + schema + "." + theTBL + ";"
+	theSQL = "SELECT max(gid) from " + schema + "." + theTBL + ";"
 	theCur.execute(theSQL)
 	theID = theCur.fetchone()[0]
 	theCur.close()
