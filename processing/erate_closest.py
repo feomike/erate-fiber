@@ -47,7 +47,7 @@ theTBL = "rockville"
 
 #function finding the closest record and calc'ing the closest_gid to that value
 def closest_gid(myGID):
-  theCur = conn.cursor()
+        theCur = conn.cursor()
 	theSQL = "SELECT leanm, ST_X(geom), ST_Y(geom) from " + schema + "." + theTBL
 	theSQL = theSQL + " WHERE gid = " + str(myGID) + ";"
 	theCur.execute(theSQL)
@@ -113,13 +113,14 @@ try:
 	theCur.close()
 	del theCur
 	print "going to be operating on this many locations: " + str(theID)
-	i = 0
-	while i < theID:
+	i = 1
+	while i <= theID:
 		print "    begining work on row: " + str(i)
-		i = i + 1
 		closest_gid(i)
-		for myType in ["address"]:  #, "road", "block", "cai", "middlemile"
+		for myType in ["address", "cai", "middlemile"]:  #, "road", "block", "cai", "middlemile"
 			closest_sbi(myType, i)
+		i = i + 1
+	now = time.localtime(time.time())		
 	print "local time:", time.asctime(now)
 except:
 	print "something bad bad happened"     
