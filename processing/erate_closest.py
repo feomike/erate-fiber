@@ -120,7 +120,7 @@ try:
 		closest_gid(i)
 		for myType in ["address"]:  #, "road", "block", "cai", "middlemile"
 			closest_sbi(myType, i)
-
+	print "local time:", time.asctime(now)
 except:
 	print "something bad bad happened"     
       
