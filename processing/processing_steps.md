@@ -32,5 +32,6 @@ Step 3 - get distance to closest road
 - run the erate_road_fiber_ov.py script (yet to be developed)
 
 
-Step 4 - run the erate_opt_ring.py script (yet to be developed).  this script optimizes the distance to fiber for each school in a school district
+Step 4 - run the erate_opt_ring.py script (yet to be developed).  
 ------
+this script optimizes the distance to fiber for each school in a school district
