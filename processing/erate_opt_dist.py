@@ -1,7 +1,7 @@
 ## ---------------------------------------------------------------------------
 ###   VERSION 0.1 (for postgis)
-### erate_closest.py
-### Created on: June 2, 20123
+### erate_opt_dist.py
+### Created on: June 21, 20123
 ### Created by: Michael Byrne
 ### Federal Communications Commission 
 ##
@@ -52,7 +52,7 @@ districtField = "leaid"
 
 #find the next closest site 
 def get_nextclosest_gid(myDist):
-  #this function gets the closest feature (gid, and its least distance to fiber)
+	#this function gets the closest feature (gid, and its least distance to fiber)
 	#without fiber, to those with fiber (or already allocated)
 	#the result is always only 1 feature
   	cCur = conn.cursor() #for closest cursor
