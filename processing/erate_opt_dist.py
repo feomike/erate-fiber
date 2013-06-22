@@ -172,7 +172,7 @@ def calc_start(myDistrict):
 		#upd_val(myField, myVal, myID - the field to calc, the value to calc, at the ID
 		#once the fields, optdist, optgid, and optring have non-null values, we assume
 		#that that school is now connected to fiber
-		upd_val("optdist", r[1], r[0])
+		upd_val("optdist", int(r[1]), r[0])
 		upd_val("optgid", r[0], r[0])
 		upd_val("optring", 0, r[0])
 		manhattan_dist(r[0], r[0], myDistrict, r[1], 0, 0)
