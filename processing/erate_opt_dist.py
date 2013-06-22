@@ -1,6 +1,6 @@
 ## ---------------------------------------------------------------------------
 ###   VERSION 0.1 (for postgis)
-### erate_opt_dist.py
+### erate_opt_ring.py
 ### Created on: June 2, 20123
 ### Created by: Michael Byrne
 ### Federal Communications Commission 
@@ -10,11 +10,11 @@
 ##the intent of this script is find the schools
 ##    - closest to other schools in the district
 ##    - and closest to a fiber source
-##this script forms the distance as a the optimal ring structure, 
-##beginning w/ the distance to the
-##shortest fiber; it does  optimize for the shortest distance because it does find
-##the next ring path distance as the shorter of the two between the 
-##least(addres, block, cai, middlemile, road) distance and the next closest fiber
+##this script forms the distance as a ring structure, beginning w/ the distance to the
+##shortest fiber; it does not optimize for the shortest distance because it does not 
+##the next ring path distance to the least(addres, block, cai, middlemile, road) distance
+##the cose that does that is the erate_opt_dist.py; either one of these should be run,
+##not both
 
 ##dependencies
 ##software
@@ -104,11 +104,11 @@ def manhattan_dist(myGID, optGID, myDist, myLeast, myX, myY):
 		upd_val("mandist",int(r[0]),myGID)
 	trigCur.close()		
 	return
-	
+
 #function finding the closest record and calc'ing the closest_gid to that value
 #myGID is the next closest w/o fiber, theDistrict, theLeast, myX, myY
 def closest_fiber_gid(myGID, myDist, myLength, optRing, myX, myY):
-	#find closet GID and distance to that GID from this myGID where it does have fiber
+	#find closet GID and distance to that GID from this GID where it does have fiber
 	theSQL = "SELECT gid, ST_DISTANCE(st_transform(geom,9102010), st_transform("
 	theSQL = theSQL + "ST_GeomFromText('POINT(" + myX + " " + myY + ")',4326), 9102010))"
 	theSQL = theSQL + " FROM " + schema + "." + theTBL + " where gid <> " + str(myGID)
@@ -119,30 +119,19 @@ def closest_fiber_gid(myGID, myDist, myLength, optRing, myX, myY):
 	optCur = conn.cursor()
 	optCur.execute(theSQL)
 	r = optCur.fetchone()
-	#check to see if there are any features which have a lower distance to
-	#fiber (e.g. least(...)) than the distance to the next one (e.g. cDist)
-	theSQL = "select gid, least(addres, block, cai, middlemile, road) as len from "
-	theSQL = theSQL + schema + "." + theTBL + " where least(addres, block, cai, "
-	theSQL = theSQL + "middlemile, road) < " + str(r[1]) + " and optring is null and "
-	theSQL = theSQL + districtField + " = '" + myDist + "' order by len limit 1;"
-	optCur.execute(theSQL)
-	#if there is at least one row, then there is a closer fiber endpoint than the next
-	#closest school
-	if optCur.rowcount == 1:
-		optr = optCur.fetchone()
-		optGID = str(optr[0])
-		theLeast = str(int(optr[1]))
-		theGID = str(optGID)
-	else:  #use the closest school
+	
+	#keeping the ring structure here, but check to see if the the distance to the next 
+	#school is greater than the least distance; take the smaller one to pass on
+	if r[1] > int(myLength):
+		theLeast = int(myLength)
+		optGID = myGID
+	else:
 		theLeast = int(r[1])
-		theGID = myGID
 		optGID = r[0]
-	optCur.close()
-	del optCur
-	upd_val("optdist", theLeast, theGID)
-	upd_val("optgid", optGID, theGID)
-	upd_val("optring", optRing, theGID)
-	manhattan_dist(theGID, optGID, myDist, theLeast, myX, myY)
+	upd_val("optdist", theLeast, myGID)
+	upd_val("optgid", optGID, myGID)
+	upd_val("optring", optRing, myGID)
+	manhattan_dist(myGID, optGID, myDist, theLeast, myX, myY)
  
 #function finding the closest record and calc'ing the closest_gid to that value
 def upd_val(myField, myVal, myID):
@@ -227,7 +216,7 @@ def calc_opt_length_wo_fiber(myDistrict):
 		#passing in gid for the next closest w/o fiber, theDistrict, theLeast, X, and Y
 		closest_fiber_gid(r[0], myDistrict, r[1], myCnt, str(r[2]), str(r[3]))
 		myCnt = myCnt + 1
-	
+
 #function which updates the optdistance and optid
 def update_row(myGID, optDist, optGID):
 	uCur = conn.cursor()
