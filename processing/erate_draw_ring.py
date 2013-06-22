@@ -34,9 +34,10 @@ theTBL = "nces_flint1"
 theOTBL = "aatest"
 
 def create_feature_rows(myGID):
-  sCur = conn.cursor() #for getting all the attributes cursor
-	theSQL = "SELECT gid, leaid, optgid, optdist, optring, st_x(geom), st_y(geom) FROM " 
-	theSQL = theSQL + schema + "." + theTBL + " where gid = " + str(myGID) + ";"
+  	sCur = conn.cursor() #for getting all the attributes cursor
+	theSQL = "SELECT gid, leaid, optgid, optdist, optring, st_x(geom), st_y(geom), " 
+	theSQL = theSQL + " mandist FROM " + schema + "." + theTBL + " where gid = "  
+	theSQL = theSQL + str(myGID) + ";"
 	sCur.execute(theSQL)	
 	r = sCur.fetchone()
 	gid = r[0]
@@ -45,27 +46,36 @@ def create_feature_rows(myGID):
 	myX = r[5]
 	myY = r[6]	
 	if str(r[0]) == str(r[2]): #the write the point
-		theSQL = "INSERT INTO " + schema + "." + theOTBL + " (leaid, optgid, optdist, optring, geom) " 
+		theSQL = "INSERT INTO " + schema + "." + theOTBL 
+		theSQL = theSQL + " (leaid, optgid, optdist, optring, mandist, geom) " 
 		theSQL = theSQL + " values ( " 
-		theSQL = theSQL + str(r[1]) + ", " + str(r[2]) + ", " + str(r[3]) + ", " + str(r[4]) + ", " 
+		theSQL = theSQL + str(r[1]) + ", " + str(r[2]) + ", " + str(r[3]) + ", " 
+		theSQL = theSQL + str(r[4]) + ", " + str(r[7]) + ", "
 		theSQL = theSQL + "ST_PointFromText('POINT(" + str(r[5]) + " " + str(r[6]) + ")' "
 		theSQL = theSQL + ", 4326)); "
 		theSQL = theSQL + " commit; "
 		sCur.execute(theSQL)
 	else: #insert the point and the line
 		#insert the points
-		theSQL = "INSERT INTO " + schema + "." + theOTBL + " values ( " + str(r[1]) + ", "
-		theSQL = theSQL + str(r[2]) + ", " + str(r[3]) + ", " + str(r[4]) + ", " 
+		theSQL = "INSERT INTO " + schema + "." + theOTBL 
+		theSQL = theSQL + " (leaid, optgid, optdist, optring, mandist, geom) " 
+		theSQL = theSQL + " values ( " 
+		theSQL = theSQL + str(r[1]) + ", " + str(r[2]) + ", " + str(r[3])
+		theSQL = theSQL + ", " + str(r[4]) + ", " + str(r[7]) + ", "
 		theSQL = theSQL + "ST_PointFromText('POINT(" + str(r[5]) + " " + str(r[6]) + ")' "
 		theSQL = theSQL + ", 4326)); "
 		theSQL = theSQL + " commit; "
 		sCur.execute(theSQL)	
-		theSQL = "select leaid, optgid, optdist, optring, st_x(geom), st_y(geom)  FROM "
+		theSQL = "select leaid, optgid, optdist, optring, st_x(geom), st_y(geom), "
+		theSQL = theSQL + "mandist  FROM "
 		theSQL = theSQL + schema + "." + theTBL + " where gid = " + str(optgid) + ";"
 		sCur.execute(theSQL)
 		r = sCur.fetchone()
-		theSQL = "INSERT INTO " + schema + "." + theOTBL + " values ( " + str(r[0]) + ", " 
-		theSQL = theSQL + str(r[1]) + ", " + str(r[2]) + ", " + str(r[3]) + ", "
+		theSQL = "INSERT INTO " + schema + "." + theOTBL 
+		theSQL = theSQL + " (leaid, optgid, optdist, optring, mandist, geom) " 
+		theSQL = theSQL + " values ( " 
+		theSQL = theSQL + str(r[0]) + ", " + str(r[1]) + ", " + str(r[2])
+		theSQL = theSQL + ", " + str(r[3]) + ", " + str(r[6]) + ", "
 		theSQL = theSQL + "ST_GeomFromText('LINESTRING(" + str(myX) + " " + str(myY) + ", " 
 		theSQL = theSQL + str(r[4]) + " " + str(r[5]) + ")', 4326) ); commit;"
 		sCur.execute(theSQL)		
@@ -79,7 +89,7 @@ try:
 	#delete theOTBL if it exists
 	theSQL = "drop table if exists " + schema + "." + theOTBL + "; "
 	theSQL = theSQL + "CREATE TABLE " + schema + "." + theOTBL + " AS SELECT "
-	theSQL = theSQL + "leaid, optgid, optdist, optring, geom FROM " 
+	theSQL = theSQL + "leaid, optgid, optdist, optring, mandist, geom FROM " 
 	theSQL = theSQL + schema + "." + theTBL + " limit 1; "
 	theSQL = theSQL + "TRUNCATE " + schema + "." + theOTBL + "; "
 	theSQL = theSQL + "ALTER TABLE " + schema + "." + theOTBL + " add column gid serial; commit; "
