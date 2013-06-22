@@ -1,7 +1,7 @@
 ## ---------------------------------------------------------------------------
 ###   VERSION 0.1 (for postgis)
 ### erate_opt_dist.py
-### Created on: June 21, 20123
+### Created on: June 2, 20123
 ### Created by: Michael Byrne
 ### Federal Communications Commission 
 ##
@@ -22,10 +22,9 @@
 ##postgres/gis (open geo suite)
 ##the psycopg library
 ##data
-##a shapefile of the the buffers of the towers excluding lpfm
-##creates 1 output shapefile per channel
+
 ##uses epsg 102010 - http://spatialreference.org/ref/esri/102010/
-##the output table "theTble' variable below, needs to have the following fields to 
+##the output table "theTBL' variable below, needs to have the following fields to 
 ##accept values
 ##gid_closest (becomes the ID of the next closest feature in theTble
 ##address - the linear distance to fiber from the address feature in meters
@@ -33,6 +32,10 @@
 ##road - the linear distance to fiber from the road feature in meters
 ##cai - the linear distance to fiber from the cai features feature in meters
 ##middle mile - the linear distance to fiber from the middle mile feature in meters
+##optgid - the GID of the next connected school in the optimal path
+##optdist - the distance to the next connected school in the optimal path
+##optring - the ordinal number of connected schools (0 is the first)
+##mandist - the manhatan distance to the next connected school in the optimal path
 
 # Import system modules
 import sys, string, os
@@ -71,6 +74,37 @@ def get_nextclosest_gid(myDist):
   	cCur.close()
   	return r
 
+#function find the manhattan distance from the current feature to its optGID
+def manhattan_dist(myGID, optGID, myDist, myLeast, myX, myY):
+	trigCur = conn.cursor()
+	#if myGID <> optGID, then create geom from text to figure out the manhattan distance
+	if myGID <> optGID:
+		theSQL = "select st_x(geom), st_y(geom) from "	+ schema + "." + theTBL + " where gid = "
+		theSQL = theSQL + str(optGID) + ";"
+		trigCur.execute(theSQL)
+		r = trigCur.fetchone()
+		x2 = r[0]
+		y2 = r[1]
+		#get the sum of the other two sides of the trianle
+		#which is length(x1y1 to x2y1) + length(x2y1 to x2y2)
+		theSQL = "SELECT st_length(st_transform(ST_GeomFromText('LINESTRING("  
+		theSQL = theSQL + str(myX) + " " + str(myY) + "," + str(x2) + " " + str(myY)
+		theSQL = theSQL + ")',4269), 9102010)) + st_length(st_transform(ST_GeomFromText('LINESTRING("
+		theSQL = theSQL + str(x2) + " " + str(myY) + "," + str(x2) + " " + str(y2)
+		theSQL = theSQL + ")',4269), 9102010));"
+		trigCur.execute(theSQL)
+		r = trigCur.fetchone()
+		upd_val("mandist",int(r[0]),myGID)
+	#if myGID == optGID:  then use trig to figure out the manhattan dist; assum 45 angle
+	if myGID == optGID:
+		theSQL = "SELECT (sin(45) * " + str(myLeast) + ") + ( cos(45) * " 
+		theSQL = theSQL + str(myLeast) + ");"
+		trigCur.execute(theSQL)
+		r = trigCur.fetchone()
+		upd_val("mandist",int(r[0]),myGID)
+	trigCur.close()		
+	return
+	
 #function finding the closest record and calc'ing the closest_gid to that value
 #myGID is the next closest w/o fiber, theDistrict, theLeast, myX, myY
 def closest_fiber_gid(myGID, myDist, myLength, optRing, myX, myY):
@@ -96,19 +130,19 @@ def closest_fiber_gid(myGID, myDist, myLength, optRing, myX, myY):
 	#closest school
 	if optCur.rowcount == 1:
 		optr = optCur.fetchone()
-		cGID = str(optr[0])
+		optGID = str(optr[0])
 		theLeast = str(int(optr[1]))
-		theGID = str(cGID)
+		theGID = str(optGID)
 	else:  #use the closest school
 		theLeast = int(r[1])
 		theGID = myGID
-		cGID = r[0]
+		optGID = r[0]
 	optCur.close()
 	del optCur
 	upd_val("optdist", theLeast, theGID)
-	upd_val("optgid", cGID, theGID)
+	upd_val("optgid", optGID, theGID)
 	upd_val("optring", optRing, theGID)
-
+	manhattan_dist(theGID, optGID, myDist, theLeast, myX, myY)
  
 #function finding the closest record and calc'ing the closest_gid to that value
 def upd_val(myField, myVal, myID):
@@ -141,7 +175,7 @@ def calc_start(myDistrict):
 		upd_val("optdist", r[1], r[0])
 		upd_val("optgid", r[0], r[0])
 		upd_val("optring", 0, r[0])
-
+		manhattan_dist(r[0], r[0], myDistrict, r[1], 0, 0)
 
 #function which updates trigger fields (optdist, optgid, and optring) if that school
 #has fiber because it has a least 0 distance or least distance less than 200 meters
@@ -160,6 +194,7 @@ def calc_opt_length_with_fiber(myDistrict):
 		upd_val("optdist", r[1], r[0])
 		upd_val("optgid", r[0], r[0])
 		upd_val("optring", 0, r[0])
+		manhattan_dist(r[0], r[0], myDistrict, r[1], 0, 0)
 	else:  #if there are many schools in the district
 		rows = dCur.fetchall()
 		#if the distance is < 200, it has access to fiber
@@ -169,6 +204,7 @@ def calc_opt_length_with_fiber(myDistrict):
 				upd_val("optgid", r[0], r[0])
 				#an optring of -1 means it is with 200 meters
 				upd_val("optring", -1, r[0])
+				manhattan_dist(r[0], r[0], myDistrict, r[1], 0, 0)
 			
 #function which finds the optimal distance for those w/o fiber
 def calc_opt_length_wo_fiber(myDistrict):
@@ -191,7 +227,7 @@ def calc_opt_length_wo_fiber(myDistrict):
 		#passing in gid for the next closest w/o fiber, theDistrict, theLeast, X, and Y
 		closest_fiber_gid(r[0], myDistrict, r[1], myCnt, str(r[2]), str(r[3]))
 		myCnt = myCnt + 1
-
+	
 #function which updates the optdistance and optid
 def update_row(myGID, optDist, optGID):
 	uCur = conn.cursor()
