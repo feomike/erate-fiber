@@ -1,7 +1,7 @@
 {
 "type": "FeatureCollection",
 "features": [
-{ "type": "Feature", "id": 707, "properties": { "apid": 707, "service": "FM", "description": "KAXE BLED-1533", "transmitter": "47.25466 ,-93.43438" }, "geometry": { "type": "Point", "coordinates": [ 47.254660, -93.434380 ] } }
+{ "type": "Feature", "id": 707, "properties": { "apid": 707, "service": "FM", "description": "KAXE BLED-1533", "transmitter": "47.25466 ,-93.43438" }, "geometry": { "type": "Point", "coordinates": [-93.434380, 47.254660 ] } }
 
 ]
 }
