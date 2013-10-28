@@ -20,7 +20,7 @@ Step 1 - get distance to closest address, cai, mm
 - run the erate-closest.py script.  this script works off of the national layers for address, cai and mm.
 
 
-Step 2 - get distance to closest address
+Step 2 - get distance to closest block
 ------
 - run the erate_block_fiber_ov.py script.  this script works on state block shapes, rather than a nationwide layer, b/c it is tons faster. this script has a stepwise approach
   - it takes all of those nces locations which are contained by fiber footprint, and assigns them a 0 distance
