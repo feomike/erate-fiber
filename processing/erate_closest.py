@@ -6,10 +6,12 @@
 ### Federal Communications Commission 
 ##
 ## ---------------------------------------------------------------------------
-##this script runs the setup for the erate analysis
+##this script runs the first step of the erate analysis
 ##the intent of this script is find the schools
 ##    - closest to other schools in the district
-##    - and closest to a fiber source
+##    - and closest to a fiber source to that school
+##		for just ADDRESS, CAI and MiddleMile locations 
+##		in the NBM Data
 
 ##dependencies
 ##software
@@ -17,11 +19,6 @@
 ##postgres/gis (open geo suite)
 ##the psycopg library
 ##data
-##a shapefile of the the buffers of the towers excluding lpfm
-##creates 1 output shapefile per channel
-##uses epsg 102010 - http://spatialreference.org/ref/esri/102010/
-##the output table "theTble' variable below, needs to have the following fields to 
-##accept values
 ##gid_closest (becomes the ID of the next closest feature in theTble
 ##address - the linear distance to fiber from the address feature in meters
 ##block - the linear distance to fiber from the block feature in meters
@@ -41,13 +38,15 @@ myHost = "localhost"
 myPort = "54321"
 myUser = "postgres"
 db = "feomike"
-schema = "sbi2012dec"
-theTBL = "rockville"
+schema = "sbi2013june"
+theTBL = "nces"
+#http://spatialreference.org/ref/epsg/3786/
+eq_prj = "3786"
 
 
 #function finding the closest record and calc'ing the closest_gid to that value
 def closest_gid(myGID):
-        theCur = conn.cursor()
+  	theCur = conn.cursor()
 	theSQL = "SELECT leanm, ST_X(geom), ST_Y(geom) from " + schema + "." + theTBL
 	theSQL = theSQL + " WHERE gid = " + str(myGID) + ";"
 	theCur.execute(theSQL)
@@ -86,7 +85,8 @@ def upd_val(myField, myVal, myID):
 def closest_sbi(myType, myGID):
 	dCur = conn.cursor()
 	theSQL = "SELECT shp_" + myType + ".gid, ST_DISTANCE(ST_TRANSFORM(" + theTBL 
-	theSQL = theSQL + ".geom,9102010), ST_TRANSFORM(shp_" + myType + ".geom,9102010)) "
+	theSQL = theSQL + ".geom," + eq_prj + "), ST_TRANSFORM(shp_" + myType + ".geom,"  
+	theSQL = theSQL + eq_prj + ")) , shp_" + myType + ".gid"
 	theSQL = theSQL + " FROM " + schema + "." + theTBL + ", " + schema + ".shp_" + myType
 	theSQL = theSQL + " WHERE " + theTBL + ".gid = " + str(myGID) + " and transtech = '50'"
 	theSQL = theSQL + "  ORDER by st_distance  limit 1;"
@@ -97,8 +97,10 @@ def closest_sbi(myType, myGID):
 		r = dCur.fetchone()
 		theGID = r[0]
 		theDist = r[1]
+		theOtherGID = r[2]
 		#update theTable with the distance
 		upd_val(myType, theDist, myGID)
+#		print "theOtherGID is: " + str(theOtherGID) + " and the dist is: " + str(theDist)
 	dCur.close()
     
 try:
@@ -117,10 +119,10 @@ try:
 	while i <= theID:
 		print "    begining work on row: " + str(i)
 		closest_gid(i)
-		for myType in ["address", "cai", "middlemile"]:  #, "road", "block", "cai", "middlemile"
+		for myType in ["middlemile","cai","address"]:  
 			closest_sbi(myType, i)
 		i = i + 1
-	now = time.localtime(time.time())		
+	now = time.localtime(time.time())
 	print "local time:", time.asctime(now)
 except:
 	print "something bad bad happened"     
