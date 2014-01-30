@@ -1,6 +1,6 @@
 Processing Steps
 ================
-The goal of this effort is to establish a comprehensive distance from fiber for each k-12 school in the United States.  These processing steps establish that distance.  Once a distance is established a separate effort uses those distances to calculate a potential cost of getting fiber to each school. And charles is a bad ass.
+The goal of this effort is to establish a comprehensive distance from fiber for each k-12 school in the United States.  These processing steps establish that distance.  Once a distance is established a separate effort uses those distances to calculate a potential cost of getting fiber to each school. 
 
 This process has two main halfs;  in part one we **establish** the physical distance from each school, to the school's **closest fiber location**.  this processing is one school at a time, against sources of fiber locations from the national broadband map.  sources of fiber locations has two processing steps.  in step one, we use fiber location from addresses, community anchor institutions, and middle mile locations in the national broadband amp.  for these data sources, the process is optimized from single nationwide datasets (e.g. a nationwide community anchor institution table).  step two is processing block and road data from the national broadband map.  this process is optimized to run on state tables (e.g. block_ak ... block_wy). 
 
