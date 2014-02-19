@@ -1,7 +1,7 @@
 Total = 
-(Areal*(D*PMa(S-dl) + D*PMb(S-dl) + D*PMu(S-dl))*3.28084 +
-Buried(dl)*(D*PMa(S-dl) + D*PMb(S-dl) + D*PMu(S-dl))*3.28084  +
-Underground(dl)*(D*PMa(S-dl) + D*PMb(S-dl)+ D(l)*PMu(S-dl))*3.28084)*CA
+(Areal*(D*PMa(S-dl) )*3.28084 +
+Buried(dl)*(D*PMb(S-dl))*3.28084  +
+Underground(dl)*(D(l)*PMu(S-dl))*3.28084)*CA
 
 Areal = $7.20 per foot
 Buried(Rural) = $5.36 per foot
