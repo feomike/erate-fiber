@@ -12,11 +12,12 @@ at the end of the second half process, all schools then have populated fields fo
 - the euclidean and manhatthan distance for connecting the schools within a district
 
 
+The process operates on a table for NCES locations (aka source location file below).  the table, needs to have a geometry column built from the latitude and longitude fields. 
 
 Pre-Steps
 ---------
 
-1.a) make sure there are fields on the source location file for the input types; 
+1.a) make sure there are fields on the source location file (eg NCES table in postgres) for the input types; 
 - gid_closest
 - address
 - block
@@ -26,10 +27,10 @@ Pre-Steps
 
 1.b) the school table will also need fields for; 
 - optdist - the optimum euclidean distance to connect the school given the district schools distance to fiber and spatial distribution of schools
-- optrint - the ordinal connection level (smallest first)
+- optring - the ordinal connection level (smallest first)
 - mandist - the manhattan distance to connect the school given the district schools distance to fiber and spatial distribution of schools
 
-All of the above fields should be initialized to 0 when begining the processing steps.
+All of the above fields should be initialized to NUll when begining the processing steps.
 
 
 2) make sure there are is a field for transtech on each of the 'measure to' tables (address, block, cai, mm, road);  each of the source broadband map tables need to have a field called transtech.  in this field a transtech code of 50 determines fiber.  for address, block, community anchor institutions, and road, this field and these codes are standard.  however, for middlemile, a transtech field needs to be added and calculated based on the current data model fields (bh_type) to determine fiber.
